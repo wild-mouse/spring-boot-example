@@ -1,5 +1,26 @@
 ---
 
 - hosts: all
+  become: yes
+  roles:
+    - role: robertdebock.java
   tasks:
-    - ping:
+    - name: generate deploy directory
+      file:
+        path: /home/ec2-user/deploy
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+    - name: Copy jar file to instance
+      copy:
+        src: ../build/libs/spring-boot-example-0.0.1-SNAPSHOT.jar
+        dest: /home/ec2-user/deploy
+        owner: ec2-user
+        group: ec2-user
+        mode: +x
+    # dispatch application
+    - name: Run jar file
+      command: "java -jar spring-boot-example-0.0.1-SNAPSHOT.jar"
+      args:
+        chdir: /home/ec2-user/deploy
